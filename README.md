@@ -1,3 +1,3 @@
 # 🍍 click
 
-* 😡i hate 🍍, i destoryed it!
+😡 i hate 🍍, i destoryed it 😈!
