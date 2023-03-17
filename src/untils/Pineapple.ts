@@ -1,15 +1,22 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
+import { randomIntFromRange } from './randomRange';
 const pineappleStore = usePineappleStore();
 
 export class Pineapple {
     ctx: CanvasRenderingContext2D;
+    canvas: HTMLCanvasElement;
+    ratio: number;
+    isSet: boolean;
     bodyStart: { x: number, y: number };
     arrBody: { cx: number, cy: number, ex: number, ey: number }[];
     leafStart: { x: number, y: number };
     arrLeaf: { cx: number, cy: number, ex: number, ey: number }[];
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         // 菠萝身
         this.ctx = ctx;
+        this.canvas = canvas;
+        this.ratio = 2;
+        this.isSet = false;
         this.bodyStart = { x: 140, y: 190 };
         this.arrBody = [
             { cx: 150, cy: 200, ex: 140, ey: 190 },
@@ -35,6 +42,12 @@ export class Pineapple {
             return;
         }
 
+        this.setPos();
+        this.drawBody();
+        this.drawLeaf();
+    }
+
+    drawBody(): void {
         // 菠萝身
         this.ctx.beginPath();
         this.ctx.moveTo(this.bodyStart.x, this.bodyStart.y);
@@ -51,7 +64,9 @@ export class Pineapple {
         this.ctx.strokeStyle = '#000';
         this.ctx.stroke();
         this.ctx.fill();
-        
+    }
+
+    drawLeaf(): void {
         // 菠萝叶
         this.ctx.beginPath();
         this.ctx.moveTo(this.leafStart.x, this.leafStart.y);
@@ -69,18 +84,57 @@ export class Pineapple {
         this.ctx.fill();
         this.ctx.closePath();
     }
-    
-    updated(): void {
-        this.bodyStart.y += 10
+
+    drawBoom(): void {
+        // 粉碎粒子效果
+        
+    }
+
+    setPos(): void {
+        if (this.isSet) {
+            return;
+        }
+
+        const randomX = randomIntFromRange(-this.bodyStart.x + 50, this.canvas.width - 250);
+        const stepX = randomX;
+        const stepY = -200;
+
+        this.bodyStart.x += stepX;
+        this.bodyStart.y += stepY;
         this.arrBody.map((item) => {
-            item.cy += 10
-            item.ey += 10
+            item.cx += stepX;
+            item.cy += stepY;
+            item.ex += stepX;
+            item.ey += stepY;
         });
         
-        this.leafStart.y += 10
+        this.leafStart.x += stepX;
+        this.leafStart.y += stepY;
         this.arrLeaf.map((item) => {
-            item.cy += 10
-            item.ey += 10
+            item.cx += stepX;
+            item.cy += stepY;
+            item.ex += stepX;
+            item.ey += stepY;
+        });
+
+        this.isSet = true;
+    }
+    
+    updated(): void {
+        this.ratio *= 0.99;
+        this.ratio += 0.25;
+        const stepY = this.ratio;
+
+        this.bodyStart.y += stepY;
+        this.arrBody.map((item) => {
+            item.cy += stepY;
+            item.ey += stepY;
+        });
+        
+        this.leafStart.y += stepY;
+        this.arrLeaf.map((item) => {
+            item.cy += stepY;
+            item.ey += stepY;
         });
     }
 
