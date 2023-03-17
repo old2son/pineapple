@@ -7,16 +7,26 @@ const router = createRouter({
 	routes: [
 		{
 			path: '/',
-			redirect: 'home',
+			redirect: 'pineapple',
 		},
 		{
-			path: '/home',
+			path: '/pineapple',
             name: 'home',
 			component: () => import('../views/Home.vue'),
 		},
 	],
 	strict: false,
 	scrollBehavior: () => ({ left: 0, top: 0 }),
+});
+
+router.beforeEach((to, from, next) => {
+	if (to.matched.length === 0) {
+		console.log(to.matched.length === 0);
+		next({ name : 'home' });
+	}
+	else {
+		next();
+	}
 });
 
 export default router;
