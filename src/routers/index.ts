@@ -21,7 +21,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
 	if (to.matched.length === 0) {
-		console.log(to.matched.length === 0);
 		next({ name : 'home' });
 	}
 	else {
