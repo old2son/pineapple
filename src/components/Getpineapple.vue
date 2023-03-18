@@ -5,25 +5,27 @@ import { Pineapple } from '@/untils/Pineapple';
 
 const pineappleStore = usePineappleStore();
 const $canvas = ref();
+const canvasStyle = ref({
+    width: window.innerWidth * 0.8,
+    height: window.innerHeight * 0.8,
+    border: '1px solid #000',
+    borderRadius: '4px',
+});
 let ctx: CanvasRenderingContext2D;
 let step: number;
 
 onMounted(() => {
-    $canvas.value.width = window.innerWidth;
-    $canvas.value.height = window.innerHeight;
-    $canvas.value.style.border = '1px solid #000';
-    $canvas.value.style.borderRadius = '4px';
     ctx = $canvas.value.getContext('2d');
 
     nextTick(() => {
         document.body.addEventListener('click', () => {
-            pineappleStore.pineappleArr.push(new Pineapple(ctx));
+            pineappleStore.pineappleArr.push(new Pineapple(ctx, $canvas.value));
             pineappleStore.increment();
-
+            
+            // 一个以上无需重复 requestAnimationFrame
             if (pineappleStore.pineappleArr.length > 1) {
                 return;
             }
-
             step = requestAnimationFrame(draw);
         });
     });
@@ -31,31 +33,41 @@ onMounted(() => {
 
 const draw = () => {
     ctx.clearRect(0, 0, $canvas.value.width, $canvas.value.height);
-    console.log('step');
     
     if (!pineappleStore.pineappleArr.length || !pineappleStore.pineappleArr[0]) {
-        console.log('end')
         cancelAnimationFrame(step);
         return;
     }
-
+    
+    cancelAnimationFrame(step);
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
         let current = pineappleStore.pineappleArr[i];
-        current.updated();
-        current.render();
+        current.pineappleUpdated();
+        current.pineappleRender();
         
-        // 边际检测
-        if (current.arrBody[i].ey > $canvas.value.height) {
-            current.remove();
+        // 边界检测
+        if (current.arrBody[0].ey > $canvas.value.height) {
+            current.boomRender();
+            current.drawBoom();
+            current.boomUpdated();
+            
         }
     }
-    
     step = requestAnimationFrame(draw);
 };
 </script>
 
 <template>
-    <canvas ref="$canvas"></canvas>
+    <!-- 动态设置canvas宽高 -->
+    <canvas 
+        ref="$canvas"
+        :width="canvasStyle.width"
+        :height="canvasStyle.height"
+        :style="{
+            border: canvasStyle.border,
+            borderRadius: canvasStyle.borderRadius,
+        }"
+    ></canvas>
 </template>
 
 <style scoped>

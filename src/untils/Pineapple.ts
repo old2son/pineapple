@@ -1,15 +1,28 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
+import { randomIntFromRange } from './randomIntRange';
 const pineappleStore = usePineappleStore();
 
 export class Pineapple {
     ctx: CanvasRenderingContext2D;
+    canvas: HTMLCanvasElement;
+    pineappleRatio: number;
+    boomRatio: number;
+    isSet: boolean;
+    isBoom: boolean;
     bodyStart: { x: number, y: number };
     arrBody: { cx: number, cy: number, ex: number, ey: number }[];
     leafStart: { x: number, y: number };
     arrLeaf: { cx: number, cy: number, ex: number, ey: number }[];
-    constructor(ctx: CanvasRenderingContext2D) {
-        // 菠萝身
+    boomArrange: { x: number; y: number; r: number; }[];
+    constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
+        this.canvas = canvas;
+        this.pineappleRatio = 2; // 菠萝运动速度
+        this.boomRatio = 4;
+        this.isSet = false;
+        this.isBoom = false;
+        
+        // 菠萝身坐标
         this.bodyStart = { x: 140, y: 190 };
         this.arrBody = [
             { cx: 150, cy: 200, ex: 140, ey: 190 },
@@ -20,7 +33,8 @@ export class Pineapple {
             { cx: 205, cy: 175, ex: 180, ey: 190 },
             { cx: 160, cy: 200, ex: 145, ey: 195 },
         ];
-        // 菠萝叶
+
+        // 菠萝叶坐标
         this.leafStart = { x: this.arrBody[1].ex, y: this.arrBody[1].ey };
         this.arrLeaf = [
             { cx: 110, cy: 110, ex: 100, ey: 110 },
@@ -28,14 +42,56 @@ export class Pineapple {
             { cx: 130, cy: 80, ex: 155, ey: 85 },
             { cx: 145, cy: 90, ex: 145, ey: 100 },
         ];
+
+        // 粒子坐标
+        this.boomArrange = [
+            // { x: 0, y: 0, r: 0},
+        ]
     }
 
-    render(): void {
-        if (!this.ctx) {
+    pineappleRender(): void {
+        if (!this.ctx || this.isBoom) {
             return;
         }
 
-        // 菠萝身
+        // this.pineappleSetPos();
+        this.drawBody();
+        this.drawLeaf();
+    }
+    
+    // 重设菠萝生成坐标
+    pineappleSetPos(): void {
+        if (this.isSet) {
+            return;
+        }
+
+        const randomX = randomIntFromRange(-this.bodyStart.x + 50, this.canvas.width - 250);
+        const stepX = randomX;
+        const stepY = -200;
+
+        this.bodyStart.x += stepX;
+        this.bodyStart.y += stepY;
+        this.arrBody.map((item) => {
+            item.cx += stepX;
+            item.cy += stepY;
+            item.ex += stepX;
+            item.ey += stepY;
+        });
+        
+        this.leafStart.x += stepX;
+        this.leafStart.y += stepY;
+        this.arrLeaf.map((item) => {
+            item.cx += stepX;
+            item.cy += stepY;
+            item.ex += stepX;
+            item.ey += stepY;
+        });
+
+        this.isSet = true;
+    }
+
+    // 生成菠萝身
+    drawBody(): void {
         this.ctx.beginPath();
         this.ctx.moveTo(this.bodyStart.x, this.bodyStart.y);
         for (let i = 0; i < this.arrBody.length; i++) {
@@ -51,8 +107,10 @@ export class Pineapple {
         this.ctx.strokeStyle = '#000';
         this.ctx.stroke();
         this.ctx.fill();
-        
-        // 菠萝叶
+    }
+
+    // 生成菠萝叶
+    drawLeaf(): void {
         this.ctx.beginPath();
         this.ctx.moveTo(this.leafStart.x, this.leafStart.y);
         for (let i = 0; i < this.arrLeaf.length; i++) {
@@ -69,18 +127,89 @@ export class Pineapple {
         this.ctx.fill();
         this.ctx.closePath();
     }
+
+    // 初始化粒子坐标
+    boomRender(): void {
+        // 生成一次
+        if (this.isBoom) {
+            return;
+        }
+        this.isBoom = true;
+        // 两点中心坐标
+        const boomCenterX = (this.arrBody[1].cx + this.arrBody[5].cx) / 2;
+        const boomCenterY = (this.arrBody[1].cy + this.arrBody[5].cy) / 2;
+
+        for (let i = 0; i < 10; i++) {
+            const randomX = randomIntFromRange(this.arrBody[1].cx - boomCenterX, this.arrBody[5].cx - boomCenterX);
+            const randomY = randomIntFromRange(-30, 30);
+            const randomRadius = randomIntFromRange(1, 4);
+
+            this.boomArrange.push({
+                x: boomCenterX + randomX,
+                y: boomCenterY + randomY,
+                r: randomRadius,
+            });
+        }
+    }
+
+    // 绘制粒子
+    drawBoom(): void { 
+        this.boomArrange.forEach(current => {
+            this.ctx.beginPath();
+            this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
+            this.ctx.fillStyle = '#000';
+            this.ctx.fill();
+            this.ctx.closePath();
+        });
+    }
+
+    // 粒子轨迹
+    boomUpdated(): void {
+        // todo: 粒子动画
+        if (!this.isBoom) {
+            return;
+        }
+        console.log('boomUpdated');
+        
+        if (this.boomRatio <= 0) {
+            this.remove();
+            this.boomRatio = 0;
+        }
+
+        this.boomRatio -= 0.1;
+
+        const stepX = 1 * this.boomRatio;
+        const stepY = -1 * this.boomRatio;
+
+        // 消散
+        this.boomArrange.map((item) => {
+            item.x += stepX;
+            item.y += stepY;
+            item.r = item.r - 0.1 < 0 ? 0 : item.r - 0.1;
+        });
+    }
     
-    updated(): void {
-        this.bodyStart.y += 10
+    // 菠萝运动轨迹
+    pineappleUpdated(): void {
+        if (this.isBoom) {
+            return;
+        }
+        
+        // 加速度
+        this.pineappleRatio *= 0.99;
+        this.pineappleRatio += 0.25;
+        const stepY = this.pineappleRatio;
+
+        this.bodyStart.y += stepY;
         this.arrBody.map((item) => {
-            item.cy += 10
-            item.ey += 10
+            item.cy += stepY;
+            item.ey += stepY;
         });
         
-        this.leafStart.y += 10
+        this.leafStart.y += stepY;
         this.arrLeaf.map((item) => {
-            item.cy += 10
-            item.ey += 10
+            item.cy += stepY;
+            item.ey += stepY;
         });
     }
 
