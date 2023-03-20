@@ -9,11 +9,12 @@ export class Pineapple {
     boomRatio: number;
     isSet: boolean;
     isBoom: boolean;
+    boomAnimate: string;
     bodyStart: { x: number, y: number };
     arrBody: { cx: number, cy: number, ex: number, ey: number }[];
     leafStart: { x: number, y: number };
     arrLeaf: { cx: number, cy: number, ex: number, ey: number }[];
-    boomArrange: { x: number; y: number; r: number; }[];
+    boomArrange: { x: number; y: number; r: number; directionX: number, directionY: number, maxH: number}[];
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
@@ -21,6 +22,7 @@ export class Pineapple {
         this.boomRatio = 4;
         this.isSet = false;
         this.isBoom = false;
+        this.boomAnimate = 'disappear';
         
         // 菠萝身坐标
         this.bodyStart = { x: 140, y: 190 };
@@ -44,9 +46,7 @@ export class Pineapple {
         ];
 
         // 粒子坐标
-        this.boomArrange = [
-            // { x: 0, y: 0, r: 0},
-        ]
+        this.boomArrange = [];
     }
 
     pineappleRender(): void {
@@ -128,67 +128,6 @@ export class Pineapple {
         this.ctx.closePath();
     }
 
-    // 初始化粒子坐标
-    boomRender(): void {
-        // 生成一次
-        if (this.isBoom) {
-            return;
-        }
-        this.isBoom = true;
-        // 两点中心坐标
-        const boomCenterX = (this.arrBody[1].cx + this.arrBody[5].cx) / 2;
-        const boomCenterY = (this.arrBody[1].cy + this.arrBody[5].cy) / 2;
-
-        for (let i = 0; i < 10; i++) {
-            const randomX = randomIntFromRange(this.arrBody[1].cx - boomCenterX, this.arrBody[5].cx - boomCenterX);
-            const randomY = randomIntFromRange(-30, 30);
-            const randomRadius = randomIntFromRange(1, 4);
-
-            this.boomArrange.push({
-                x: boomCenterX + randomX,
-                y: boomCenterY + randomY,
-                r: randomRadius,
-            });
-        }
-    }
-
-    // 绘制粒子
-    drawBoom(): void { 
-        this.boomArrange.forEach(current => {
-            this.ctx.beginPath();
-            this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
-            this.ctx.fillStyle = '#000';
-            this.ctx.fill();
-            this.ctx.closePath();
-        });
-    }
-
-    // 粒子轨迹
-    boomUpdated(): void {
-        // todo: 粒子动画
-        if (!this.isBoom) {
-            return;
-        }
-        console.log('boomUpdated');
-        
-        if (this.boomRatio <= 0) {
-            this.remove();
-            this.boomRatio = 0;
-        }
-
-        this.boomRatio -= 0.1;
-
-        const stepX = 1 * this.boomRatio;
-        const stepY = -1 * this.boomRatio;
-
-        // 消散
-        this.boomArrange.map((item) => {
-            item.x += stepX;
-            item.y += stepY;
-            item.r = item.r - 0.1 < 0 ? 0 : item.r - 0.1;
-        });
-    }
-    
     // 菠萝运动轨迹
     pineappleUpdated(): void {
         if (this.isBoom) {
@@ -211,6 +150,96 @@ export class Pineapple {
             item.cy += stepY;
             item.ey += stepY;
         });
+    }
+
+    // 初始化粒子坐标
+    boomRender(): void {
+        // 生成一次
+        if (this.isBoom) {
+            return;
+        }
+        this.isBoom = true;
+        // 两点中心坐标
+        const boomCenterX = (this.arrBody[1].cx + this.arrBody[5].cx) / 2;
+        const boomCenterY = (this.arrBody[1].cy + this.arrBody[5].cy) / 2;
+
+        for (let i = 0; i < 10; i++) {
+            const randomX = randomIntFromRange(this.arrBody[1].cx - boomCenterX, this.arrBody[5].cx - boomCenterX);
+            const randomY = randomIntFromRange(-10, 50);
+            const r = randomIntFromRange(1, 4);
+            const x = boomCenterX + randomX;
+            const y = boomCenterY + randomY;
+            const directionX = boomCenterX > x ? -1 : 1;
+            const directionY = -1;
+            const maxH = y - 50;
+
+            this.boomArrange.push({
+                x,
+                y,
+                r,
+                directionX,
+                directionY,
+                maxH
+            });
+        }
+
+        // 伪随机两种效果
+        if (Math.random() >= 0.5) {
+            this.boomAnimate = 'collapse';
+        }
+        else {
+            this.boomAnimate = 'disappear';
+        }
+    }
+
+    // 绘制粒子
+    drawBoom(): void { 
+        this.boomArrange.forEach(current => {
+            this.ctx.beginPath();
+            this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
+            this.ctx.fillStyle = '#000';
+            this.ctx.fill();
+            this.ctx.closePath();
+        });
+    }
+
+    // 粒子轨迹
+    boomUpdated(): void {
+        // todo: 粒子动画
+        if (!this.isBoom) {
+            return;
+        }
+        
+        if (this.boomRatio <= 0) {
+            this.remove();
+            this.boomRatio = 0;
+        }
+
+        this.boomRatio -= 0.1;
+        const act = this.boomAct();
+        act['collapse']();
+    }
+
+    boomAct(): { [key: string]: () => void } {
+        return {
+            'collapse': ():void => {
+                this.boomArrange.map((item) => {
+                    item.x += item.directionX * this.boomRatio;
+                    if (item.y < item.maxH && item.directionY === -1) {
+                        item.directionY = 0.001;
+                    }
+                    item.y += item.directionY * this.boomRatio;
+                    // item.r = item.r - 0.08 < 0 ? 0 : item.r - 0.08;
+                });
+            },
+            'disappear': ():void => {
+                this.boomArrange.map((item) => {
+                    item.x += item.directionX * this.boomRatio;
+                    item.y += item.directionY * this.boomRatio;
+                    item.r = item.r - 0.08 < 0 ? 0 : item.r - 0.08;
+                });
+            }
+        }
     }
 
     remove(): void {

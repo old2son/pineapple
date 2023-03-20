@@ -50,7 +50,6 @@ const draw = () => {
             current.boomRender();
             current.drawBoom();
             current.boomUpdated();
-            
         }
     }
     step = requestAnimationFrame(draw);
