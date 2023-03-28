@@ -7,7 +7,8 @@ export class Pineapple {
     canvas: HTMLCanvasElement;
     pineappleRatio: number;
     boomRatio: number;
-    isSet: boolean;
+    isSetPineapple: boolean;
+    isSetBoom: boolean;
     isBoom: boolean;
     boomAnimate: string;
     bodyStart: { x: number, y: number };
@@ -15,14 +16,21 @@ export class Pineapple {
     leafStart: { x: number, y: number };
     arrLeaf: { cx: number, cy: number, ex: number, ey: number }[];
     boomArrange: { x: number; y: number; r: number; directionX: number, directionY: number, maxH: number}[];
+    angle: number;
+    commonSpeed: number;
+    sec: number;
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
         this.pineappleRatio = 2; // 菠萝运动速度
         this.boomRatio = 4;
-        this.isSet = false;
+        this.isSetPineapple = false;
+        this.isSetBoom = false;
         this.isBoom = false;
         this.boomAnimate = 'disappear';
+        this.angle = 0;
+        this.commonSpeed = 0.05;
+        this.sec = 500;
         
         // 菠萝身坐标
         this.bodyStart = { x: 140, y: 190 };
@@ -54,14 +62,14 @@ export class Pineapple {
             return;
         }
 
-        // this.pineappleSetPos();
+        this.pineappleSetPos();
         this.drawBody();
         this.drawLeaf();
     }
     
     // 重设菠萝生成坐标
     pineappleSetPos(): void {
-        if (this.isSet) {
+        if (this.isSetPineapple) {
             return;
         }
 
@@ -87,7 +95,7 @@ export class Pineapple {
             item.ey += stepY;
         });
 
-        this.isSet = true;
+        this.isSetPineapple = true;
     }
 
     // 生成菠萝身
@@ -131,12 +139,17 @@ export class Pineapple {
     // 菠萝运动轨迹
     pineappleUpdated(): void {
         if (this.isBoom) {
+            this.boomUpdated();
             return;
         }
-        
-        // 加速度
-        this.pineappleRatio *= 0.99;
-        this.pineappleRatio += 0.25;
+
+        if (this.arrBody[0].ey > this.canvas.height) {
+            this.isBoom = true;
+            return;
+        }
+
+        this.pineappleRatio *= 0.99;    // 加速度
+        this.pineappleRatio += this.commonSpeed;   // 重力
         const stepY = this.pineappleRatio;
 
         this.bodyStart.y += stepY;
@@ -150,50 +163,58 @@ export class Pineapple {
             item.cy += stepY;
             item.ey += stepY;
         });
+
+        this.pineappleRender();
     }
 
     // 初始化粒子坐标
     boomRender(): void {
-        // 生成一次
-        if (this.isBoom) {
+        if (!this.ctx || !this.isBoom) {
             return;
         }
-        this.isBoom = true;
-        // 两点中心坐标
-        const boomCenterX = (this.arrBody[1].cx + this.arrBody[5].cx) / 2;
-        const boomCenterY = (this.arrBody[1].cy + this.arrBody[5].cy) / 2;
-
-        for (let i = 0; i < 10; i++) {
-            const randomX = randomIntFromRange(this.arrBody[1].cx - boomCenterX, this.arrBody[5].cx - boomCenterX);
-            const randomY = randomIntFromRange(-10, 50);
-            const r = randomIntFromRange(1, 4);
-            const x = boomCenterX + randomX;
-            const y = boomCenterY + randomY;
-            const directionX = boomCenterX > x ? -1 : 1;
-            const directionY = -1;
-            const maxH = y - 50;
-
-            this.boomArrange.push({
-                x,
-                y,
-                r,
-                directionX,
-                directionY,
-                maxH
-            });
-        }
-
-        // 伪随机两种效果
-        if (Math.random() >= 0.5) {
-            this.boomAnimate = 'collapse';
-        }
-        else {
-            this.boomAnimate = 'disappear';
-        }
+        
+        this.drawBoom();
     }
 
     // 绘制粒子
     drawBoom(): void { 
+        // 确定坐标,只生成一次
+        if (!this.isSetBoom) {
+            // 两点中心坐标
+            const boomCenterX = (this.arrBody[1].cx + this.arrBody[5].cx) / 2;
+            const boomCenterY = (this.arrBody[1].cy + this.arrBody[5].cy) / 2;
+
+            for (let i = 0; i < 10; i++) {
+                const randomX = randomIntFromRange(this.arrBody[1].cx - boomCenterX, this.arrBody[5].cx - boomCenterX);
+                const randomY = randomIntFromRange(-10, 50);
+                const r = randomIntFromRange(1, 4);
+                const x = boomCenterX + randomX;
+                const y = boomCenterY + randomY;
+                const directionX = boomCenterX > x ? -1 : 1;
+                const directionY = -1;
+                const maxH = y - 50;
+
+                this.boomArrange.push({
+                    x,
+                    y,
+                    r,
+                    directionX,
+                    directionY,
+                    maxH
+                });
+            }
+
+            // 伪随机两种效果
+            if (Math.random() >= 0.5) {
+                this.boomAnimate = 'collapse';
+            }
+            else {
+                this.boomAnimate = 'disappear';
+            }
+
+            this.isSetBoom = true;
+        }
+        
         this.boomArrange.forEach(current => {
             this.ctx.beginPath();
             this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
@@ -209,40 +230,59 @@ export class Pineapple {
         if (!this.isBoom) {
             return;
         }
+
+        this.boomRender();
         
         if (this.boomRatio <= 0) {
             this.remove();
             this.boomRatio = 0;
+            return;
         }
 
-        this.boomRatio -= 0.1;
+        this.boomRatio -= this.commonSpeed;
         const act = this.boomAct();
-        act['collapse']();
+        // act['collapse']();
+        act['disappear']();
     }
 
     boomAct(): { [key: string]: () => void } {
         return {
             'collapse': ():void => {
+                const radius = 2;
+                const speed = 0.01;
                 this.boomArrange.map((item) => {
-                    item.x += item.directionX * this.boomRatio;
-                    if (item.y < item.maxH && item.directionY === -1) {
-                        item.directionY = 0.001;
-                    }
-                    item.y += item.directionY * this.boomRatio;
-                    // item.r = item.r - 0.08 < 0 ? 0 : item.r - 0.08;
+                    item.x = item.x + Math.cos(this.angle) * radius;
+                    item.y = item.y + Math.sin(this.angle) * radius;
                 });
+                this.angle += speed;
+
+                // Math.PI 为180°, 大于 90° 时处理粒子
+                if (this.angle >= Math.PI / 2) {
+                    console.log(this.angle);
+                }
+
             },
             'disappear': ():void => {
                 this.boomArrange.map((item) => {
                     item.x += item.directionX * this.boomRatio;
                     item.y += item.directionY * this.boomRatio;
-                    item.r = item.r - 0.08 < 0 ? 0 : item.r - 0.08;
+                    item.r = item.r - this.commonSpeed < 0 ? 0 : item.r - this.commonSpeed;
                 });
             }
         }
     }
 
     remove(): void {
-        pineappleStore.pineappleArr.splice(0, 1);
+        // todo: 防止1-2个🍍删除闪烁
+        if (pineappleStore.pineappleArr.length > 5) { 
+            for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
+                pineappleStore.pineappleArr.splice(i, 1);
+            }
+        }
+        else if (this.sec <= 0) {
+            for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
+                pineappleStore.pineappleArr.splice(i, 1);
+            }
+        }
     }
 }

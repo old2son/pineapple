@@ -43,15 +43,8 @@ const draw = () => {
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
         let current = pineappleStore.pineappleArr[i];
         current.pineappleUpdated();
-        current.pineappleRender();
-        
-        // 边界检测
-        if (current.arrBody[0].ey > $canvas.value.height) {
-            current.boomRender();
-            current.drawBoom();
-            current.boomUpdated();
-        }
     }
+
     step = requestAnimationFrame(draw);
 };
 </script>
