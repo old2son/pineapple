@@ -1,5 +1,5 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
-import { randomIntFromRange } from './randomIntRange';
+import { randomIntFromRange, randomFloatFromRange } from './randomRange';
 const pineappleStore = usePineappleStore();
 
 export class Pineapple {
@@ -21,6 +21,7 @@ export class Pineapple {
     sec: number;
     isRemove: boolean;
     index: number | null;
+    itemSpeed: number;
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
@@ -29,12 +30,13 @@ export class Pineapple {
         this.isSetPineapple = false;
         this.isSetBoom = false;
         this.isBoom = false;
-        this.boomAnimate = 'disappear';
-        this.angle = 0;
+        this.boomAnimate = Math.random() >= 0.5 ? 'collapse' : 'disappear';
+        this.angle = 0; // Math.PI 为180度
         this.commonSpeed = 0.05;
         this.sec = 500;
         this.isRemove = false;
         this.index = null;
+        this.itemSpeed = randomFloatFromRange(1, 3);
 
         // 菠萝身坐标
         this.bodyStart = { x: 140, y: 190 };
@@ -152,6 +154,7 @@ export class Pineapple {
             return;
         }
 
+        // 菠萝运动到底部时爆炸
         if (this.arrBody[0].ey > this.canvas.height) {
             this.isBoom = true;
             return;
@@ -199,8 +202,8 @@ export class Pineapple {
                 const r = randomIntFromRange(1, 4);
                 const x = boomCenterX + randomX;
                 const y = boomCenterY + randomY;
-                const directionX = boomCenterX > x ? -1 : 1;
-                const directionY = -1;
+                const directionX = boomCenterX > x ? -1 : 1; // 向左或向右
+                const directionY = -1; // 向上
                 const maxH = y - 50;
 
                 this.boomArrange.push({
@@ -212,15 +215,6 @@ export class Pineapple {
                     maxH
                 });
             }
-
-            // 伪随机两种效果
-            if (Math.random() >= 0.5) {
-                this.boomAnimate = 'collapse';
-            }
-            else {
-                this.boomAnimate = 'disappear';
-            }
-
             this.isSetBoom = true;
         }
         
@@ -250,26 +244,20 @@ export class Pineapple {
 
         this.boomRatio -= this.commonSpeed;
         const act = this.boomAct();
-        // act['collapse']();
-        act['disappear']();
+        act[this.boomAnimate]();
     }
 
     boomAct(): { [key: string]: () => void } {
         return {
             'collapse': ():void => {
                 const radius = 2;
-                const speed = 0.01;
+                const angleSpeed = 0.02;
                 this.boomArrange.map((item) => {
-                    item.x = item.x + Math.cos(this.angle) * radius;
-                    item.y = item.y + Math.sin(this.angle) * radius;
+                    item.x = item.x + Math.cos(this.angle) * (radius * item.directionX) + (this.itemSpeed * item.directionX);
+                    item.y = item.y + Math.sin(this.angle) * radius - this.itemSpeed;
+                    item.r = item.r - this.commonSpeed < 0 ? 0 : item.r - this.commonSpeed;
                 });
-                this.angle += speed;
-
-                // Math.PI 为180°, 大于 90° 时处理粒子
-                if (this.angle >= Math.PI / 2) {
-                    console.log(this.angle);
-                }
-
+                this.angle += angleSpeed;
             },
             'disappear': ():void => {
                 this.boomArrange.map((item) => {
