@@ -19,6 +19,8 @@ export class Pineapple {
     angle: number;
     commonSpeed: number;
     sec: number;
+    isRemove: boolean;
+    index: number | null;
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
@@ -31,7 +33,9 @@ export class Pineapple {
         this.angle = 0;
         this.commonSpeed = 0.05;
         this.sec = 500;
-        
+        this.isRemove = false;
+        this.index = null;
+
         // 菠萝身坐标
         this.bodyStart = { x: 140, y: 190 };
         this.arrBody = [
@@ -137,7 +141,12 @@ export class Pineapple {
     }
 
     // 菠萝运动轨迹
-    pineappleUpdated(): void {
+    pineappleUpdated(i: number | null = null): void {
+        // 只有第一次进入时才会记录下标
+        if (this.index === null && i !== null) {
+            this.index = i;
+        }
+
         if (this.isBoom) {
             this.boomUpdated();
             return;
@@ -273,16 +282,10 @@ export class Pineapple {
     }
 
     remove(): void {
-        // todo: 防止1-2个🍍删除闪烁
-        if (pineappleStore.pineappleArr.length > 5) { 
-            for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
-                pineappleStore.pineappleArr.splice(i, 1);
-            }
-        }
-        else if (this.sec <= 0) {
-            for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
-                pineappleStore.pineappleArr.splice(i, 1);
-            }
+        // length >= 20 防止 🍍 删除闪烁
+        this.isRemove = true;
+        if (pineappleStore.pineappleArr.length >= 20 && this.index !== null) { 
+            pineappleStore.pineappleArr.splice(this.index, 1);
         }
     }
 }

@@ -14,6 +14,26 @@ const canvasStyle = ref({
 let ctx: CanvasRenderingContext2D;
 let step: number;
 
+// 5 秒后清空数组
+const debounce = (fn: Function, delay: number) => {
+    let timer: number | null;
+
+    return function (this: any, ...args: any[]) {
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = window.setTimeout(() => {
+            fn.apply(this, args);
+        }, delay);
+    };
+};
+const debounceSlice = debounce(() => {
+    for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
+            pineappleStore.pineappleArr.splice(i, 1);
+        }
+    }, 
+5000);
+
 onMounted(() => {
     ctx = $canvas.value.getContext('2d');
 
@@ -21,7 +41,8 @@ onMounted(() => {
         document.body.addEventListener('click', () => {
             pineappleStore.pineappleArr.push(new Pineapple(ctx, $canvas.value));
             pineappleStore.increment();
-            
+            debounceSlice();
+
             // 一个以上无需重复 requestAnimationFrame
             if (pineappleStore.pineappleArr.length > 1) {
                 return;
@@ -42,7 +63,7 @@ const draw = () => {
     cancelAnimationFrame(step);
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
         let current = pineappleStore.pineappleArr[i];
-        current.pineappleUpdated();
+        current.pineappleUpdated(i);
     }
 
     step = requestAnimationFrame(draw);
