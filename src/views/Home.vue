@@ -10,6 +10,10 @@ const { count, rank, double } = storeToRefs(pineappleStore);
 const $counter = ref();
 const $rank = ref();
 
+  // 重置所有状态
+const reset = () => {
+    pineappleStore.$reset();
+};
 </script>
 
 <template>
@@ -17,7 +21,8 @@ const $rank = ref();
         <get-pineapple></get-pineapple>
         <div ref="$counter"><span style="font-size: 30px;">🍍</span>粉碎数:{{ count }}</div>
         <div ref="$counter"><span style="font-size: 30px;">🍍</span>粉碎数x2:{{ double }}</div>
-        <a>记录</a>
+        <!-- <a>记录</a> -->
+        <a @click.stop="reset">重置</a>
         <ul ref="$rank">
             排行榜:
             <template v-for="(item, index) in rank" :key="index">

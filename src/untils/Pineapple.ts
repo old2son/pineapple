@@ -1,6 +1,20 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { randomIntFromRange, randomFloatFromRange } from './randomRange';
 const pineappleStore = usePineappleStore();
+let myWorker: Worker;
+
+const initWorker = () => {
+    if (window.Worker) {
+        myWorker = new Worker(new URL('@/untils/wokerPineapple.ts', import.meta.url), {
+            type: 'module',
+        });
+
+        // myWorker.onmessage = (e) => {
+            
+        // };
+    }
+}
+initWorker();
 
 export class Pineapple {
     ctx: CanvasRenderingContext2D;
@@ -39,24 +53,24 @@ export class Pineapple {
         this.itemSpeed = randomFloatFromRange(1, 3);
 
         // 菠萝身坐标
-        this.bodyStart = { x: 140, y: 190 };
+        this.bodyStart = { x: 140, y: -110 };
         this.arrBody = [
-            { cx: 150, cy: 200, ex: 140, ey: 190 },
-            { cx: 115, cy: 150, ex: 120, ey: 120 },
-            { cx: 125, cy: 100, ex: 150, ey: 100 },
-            { cx: 160, cy: 100, ex: 165, ey: 105 },
-            { cx: 200, cy: 130, ex: 200, ey: 150 },
-            { cx: 205, cy: 175, ex: 180, ey: 190 },
-            { cx: 160, cy: 200, ex: 145, ey: 195 },
+            { cx: 150, cy: -100, ex: 140, ey: -110 },
+            { cx: 115, cy: -150, ex: 120, ey: -180 },
+            { cx: 125, cy: -200, ex: 150, ey: -200 },
+            { cx: 160, cy: -200, ex: 165, ey: -195 },
+            { cx: 200, cy: -170, ex: 200, ey: -150 },
+            { cx: 205, cy: -125, ex: 180, ey: -110 },
+            { cx: 160, cy: -100, ex: 145, ey: -105 },
         ];
 
         // 菠萝叶坐标
         this.leafStart = { x: this.arrBody[1].ex, y: this.arrBody[1].ey };
         this.arrLeaf = [
-            { cx: 110, cy: 110, ex: 100, ey: 110 },
-            { cx: 110, cy: 100, ex: 130, ey: 105 },
-            { cx: 130, cy: 80, ex: 155, ey: 85 },
-            { cx: 145, cy: 90, ex: 145, ey: 100 },
+            { cx: 110, cy: -190, ex: 100, ey: -190 },
+            { cx: 110, cy: -200, ex: 130, ey: -195 },
+            { cx: 130, cy: -220, ex: 155, ey: -215 },
+            { cx: 145, cy: -210, ex: 145, ey: -200 },
         ];
 
         // 粒子坐标
@@ -79,27 +93,24 @@ export class Pineapple {
             return;
         }
 
-        const randomX = randomIntFromRange(-this.bodyStart.x + 50, this.canvas.width - 250);
-        const stepX = randomX;
-        const stepY = -200;
+        myWorker.postMessage(
+            JSON.stringify({
+                body: this.arrBody,
+                leaf: this.arrLeaf,
+                bodyStart: this.bodyStart,
+                leafStart: this.leafStart,
+                canvasWidth: this.canvas.width,
+                type: 'setPos'
+            })
+        );
 
-        this.bodyStart.x += stepX;
-        this.bodyStart.y += stepY;
-        this.arrBody.map((item) => {
-            item.cx += stepX;
-            item.cy += stepY;
-            item.ex += stepX;
-            item.ey += stepY;
-        });
-        
-        this.leafStart.x += stepX;
-        this.leafStart.y += stepY;
-        this.arrLeaf.map((item) => {
-            item.cx += stepX;
-            item.cy += stepY;
-            item.ex += stepX;
-            item.ey += stepY;
-        });
+        myWorker.onmessage = (e) => {
+            const { body, leaf, bodyStart, leafStart } = JSON.parse(e.data);
+            this.arrBody = body;
+            this.arrLeaf = leaf;
+            this.bodyStart = bodyStart;
+            this.leafStart = leafStart;
+        };
 
         this.isSetPineapple = true;
     }
@@ -169,7 +180,7 @@ export class Pineapple {
             item.cy += stepY;
             item.ey += stepY;
         });
-        
+
         this.leafStart.y += stepY;
         this.arrLeaf.map((item) => {
             item.cy += stepY;

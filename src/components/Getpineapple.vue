@@ -6,18 +6,16 @@ import { Pineapple } from '@/untils/Pineapple';
 const pineappleStore = usePineappleStore();
 const $canvas = ref();
 const canvasStyle = ref({
-    width: window.innerWidth * 0.8,
-    height: window.innerHeight * 0.8,
+    width: window.innerWidth,
+    height: window.innerHeight,
     border: '1px solid #000',
     borderRadius: '4px',
 });
 let ctx: CanvasRenderingContext2D;
 let step: number;
 
-// 5 秒后清空数组
 const debounce = (fn: Function, delay: number) => {
     let timer: number | null;
-
     return function (this: any, ...args: any[]) {
         if (timer) {
             clearTimeout(timer);
@@ -27,12 +25,10 @@ const debounce = (fn: Function, delay: number) => {
         }, delay);
     };
 };
+// 超过 5 秒后才清空数组
 const debounceSlice = debounce(() => {
-    for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
-            pineappleStore.pineappleArr.splice(i, 1);
-        }
-    }, 
-5000);
+    pineappleStore.$patch({pineappleArr: []});
+}, 5000);
 
 onMounted(() => {
     ctx = $canvas.value.getContext('2d');
@@ -73,16 +69,35 @@ const draw = () => {
 <template>
     <!-- 动态设置canvas宽高 -->
     <canvas 
+        class="canvas-pineapple"
         ref="$canvas"
-        :width="canvasStyle.width"
-        :height="canvasStyle.height"
+        :width="canvasStyle.width * 0.8"
+        :height="canvasStyle.height * 0.8"
         :style="{
             border: canvasStyle.border,
             borderRadius: canvasStyle.borderRadius,
         }"
     ></canvas>
+
+    <canvas 
+        class="canvas-bg"
+        ref="$canvasbg"
+        :width="canvasStyle.width"
+        :height="canvasStyle.height"
+    ></canvas>
 </template>
 
 <style scoped>
+.canvas-bg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+}
 
+.canvas-pineapple {
+    background: #fff;
+}
 </style>

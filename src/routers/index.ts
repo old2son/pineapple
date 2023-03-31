@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-// import { defineStore, createPinia } from 'pinia';
 
 const modules = import.meta.glob('@/views/**/*.vue');
 const router = createRouter({
