@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
-import { Pineapple } from '@/untils/Pineapple';
+import { Pineapple } from './scripts/Pineapple';
 
 const pineappleStore = usePineappleStore();
 const $canvas = ref();
@@ -95,9 +95,13 @@ const draw = () => {
     left: 0;
     right: 0;
     z-index: -1;
+    background-color: var(--background-color-lighter);
 }
 
 .canvas-pineapple {
     background: #fff;
+    cursor: url('@/assets/images/test.png'), auto;
 }
+
+
 </style>

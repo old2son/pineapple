@@ -1,19 +1,16 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
-import { randomIntFromRange, randomFloatFromRange } from './randomRange';
-const pineappleStore = usePineappleStore();
-let myWorker: Worker;
+import { randomIntFromRange, randomFloatFromRange } from '@/untils/randomRange';
+import sound from '@/assets/sounds/splatter.mp3';
 
+const pineappleStore = usePineappleStore();
 const initWorker = () => {
     if (window.Worker) {
-        myWorker = new Worker(new URL('@/untils/wokerPineapple.ts', import.meta.url), {
+        myWorker = new Worker(new URL('@/components/scripts/wokerPineapple.ts', import.meta.url), {
             type: 'module',
         });
-
-        // myWorker.onmessage = (e) => {
-            
-        // };
     }
 }
+let myWorker: Worker;
 initWorker();
 
 export class Pineapple {
@@ -168,6 +165,7 @@ export class Pineapple {
         // 菠萝运动到底部时爆炸
         if (this.arrBody[0].ey > this.canvas.height) {
             this.isBoom = true;
+            this.boomSound();
             return;
         }
 
@@ -281,10 +279,20 @@ export class Pineapple {
     }
 
     remove(): void {
+        if (!this.isRemove) {
+            this.isRemove = true;
+        }
+
         // length >= 20 防止 🍍 删除闪烁
-        this.isRemove = true;
         if (pineappleStore.pineappleArr.length >= 20 && this.index !== null) { 
             pineappleStore.pineappleArr.splice(this.index, 1);
         }
+    }
+
+     // 菠萝声效
+     boomSound(): void {
+        const audio = new Audio(sound);
+        audio.volume = 0.5;
+        audio.play();
     }
 }

@@ -1,7 +1,6 @@
 import { ref, computed, reactive, Ref } from 'vue';
 import { defineStore } from 'pinia';
-import { Pineapple } from '@/untils/Pineapple';
-
+import { Pineapple } from '@/components/scripts/Pineapple';
 
 export const usePineappleStore = defineStore('pineappleCounter', () => {
     // 在 Setup Store 中：

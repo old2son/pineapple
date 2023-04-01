@@ -1,17 +1,17 @@
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
-	font-weight: 400;
-
-	color-scheme: light dark;
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
-
-	font-synthesis: none;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
+	color: rgba(255, 255, 255, 0.87);
+	color-scheme: light dark;
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	font-weight: 400;
+	font-synthesis: none;
+	background-color: #242424;
+	--color-lighter: #fff;
+	--background-color-lighter: #353740;
 }
 
 a {
@@ -72,15 +72,16 @@ button:focus-visible {
 	padding: 2em;
 }
 
+/* 系统主题色 */
 @media (prefers-color-scheme: light) {
 	:root {
-		color: #213547;
-		background-color: #ffffff;
+		color: var(--color-lighter);
+		background-color: var(--background-color-lighter);
 	}
-	a:hover {
-		color: #747bff;
-	}
-	button {
-		background-color: #f9f9f9;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		color: #fff;
+		background-color: #213547;
 	}
 }
