@@ -292,7 +292,7 @@ export class Pineapple {
      // 菠萝声效
      boomSound(): void {
         const audio = new Audio(sound);
-        audio.volume = 0.5;
+        audio.volume = 0.2;
         audio.play();
     }
 }
