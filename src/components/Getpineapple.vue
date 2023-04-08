@@ -2,10 +2,14 @@
 import { ref, reactive, onMounted, nextTick } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { Pineapple } from './scripts/Pineapple';
+import { Canvasbg } from './scripts/CanvasBg';
+import imgPiniaBg from '@/assets/images/pinia_sm_bg.png';
+import imgBg from '@/assets/images/pinia.jpeg';
 
 const pineappleStore = usePineappleStore();
 const $wrapPineapple = ref();
-const $canvas = ref();
+const $canvasPinieapple = ref();
+const $canvasBg = ref();
 const canvasPineappleStyle = reactive({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -16,11 +20,14 @@ const canvasBgStyle = reactive({
     width: window.innerWidth,
     height: window.innerHeight,
 });
-const mouseStyle:{x: string | number, y: string | number } = reactive({
+const mouseStyle:{x: string | number, y: string | number, rotate: number, dirrection: number  } = reactive({
     x: '50%',
     y: '50%',
+    rotate: -35,
+    dirrection: 0,
 });
-let ctx: CanvasRenderingContext2D;
+let ctxPinieapple: CanvasRenderingContext2D;
+let ctxBg: CanvasRenderingContext2D;
 let step: number;
 
 const debounce = (fn: Function, delay: number) => {
@@ -46,31 +53,49 @@ const mouseMove = (e: MouseEvent) => {
     mouseStyle.y = clientY - top;
 };
 
+// 菠萝背景图
+const renderPiniaBg = () => {
+    const img = new Image();
+    img.src = imgPiniaBg;
+    img.onload = () => {
+        const pattern = ctxPinieapple.createPattern(img, 'repeat');
+        if (pattern !== null) {
+            ctxPinieapple.fillStyle = pattern;
+            ctxPinieapple.fillRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
+        }
+    };
+};
+
 onMounted(() => {
-    ctx = $canvas.value.getContext('2d');
+    ctxPinieapple = $canvasPinieapple.value.getContext('2d');
+    ctxBg = $canvasBg.value.getContext('2d');
     canvasPineappleStyle.width = $wrapPineapple.value.offsetWidth;
     canvasPineappleStyle.height = $wrapPineapple.value.offsetHeight;
     
     nextTick(() => {
-        document.body.addEventListener('click', () => {
-            pineappleStore.pineappleArr.push(new Pineapple(ctx, $canvas.value));
-            pineappleStore.increment();
-            debounceSlice();
-
-            // 一个以上无需重复 requestAnimationFrame
-            if (pineappleStore.pineappleArr.length > 1) {
-                return;
-            }
-            step = requestAnimationFrame(draw);
-        });
+        renderPiniaBg();
+        new Canvasbg(ctxBg, $canvasBg.value, {imgBg});
     });
 });
 
+const pineappleClick = () => {
+    pineappleStore.pineappleArr.push(new Pineapple(ctxPinieapple, $canvasPinieapple.value));
+    pineappleStore.increment();
+    debounceSlice();
+
+    // 一个以上无需重复 requestAnimationFrame
+    if (pineappleStore.pineappleArr.length > 1) {
+        return;
+    }
+    step = requestAnimationFrame(draw);
+}
+
 const draw = () => {
-    ctx.clearRect(0, 0, $canvas.value.width, $canvas.value.height);
+    ctxPinieapple.clearRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
     
     if (!pineappleStore.pineappleArr.length || !pineappleStore.pineappleArr[0]) {
         cancelAnimationFrame(step);
+        renderPiniaBg();
         return;
     }
     
@@ -80,7 +105,15 @@ const draw = () => {
         current.pineappleUpdated(i);
     }
 
-    step = requestAnimationFrame(draw);
+    if (mouseStyle.dirrection) {
+        mouseStyle.rotate -= 1;
+    }
+    else {
+        mouseStyle.rotate > 360 && (mouseStyle.rotate = 0);
+        mouseStyle.rotate += 1;
+    }
+    
+    requestAnimationFrame(draw);
 };
 </script>
 
@@ -92,28 +125,31 @@ const draw = () => {
     >
         <canvas 
             class="pineapple-canvas"
-            ref="$canvas"
+            ref="$canvasPinieapple"
             :width="canvasPineappleStyle.width"
             :height="canvasPineappleStyle.height"
             :style="{
                 border: canvasPineappleStyle.border,
                 borderRadius: canvasPineappleStyle.borderRadius,
             }"
+            @contextmenu.prevent
+            @click="pineappleClick"
         ></canvas>
         <img 
             class="pineapple-mouse"
-            src="@/assets/images/plane.png" 
+            src="@/assets/images/pinia_sm.png" 
             alt="aim"
             :style="{
                 top: `${mouseStyle.y}px`,
-                left:`${mouseStyle.x}px`
+                left:`${mouseStyle.x}px`,
+                rotate: `${mouseStyle.rotate}deg`,
             }"
         >
     </div>
 
     <canvas 
         class="canvas-bg"
-        ref="$canvasbg"
+        ref="$canvasBg"
         :width="canvasBgStyle.width"
         :height="canvasBgStyle.height"
     ></canvas>
@@ -137,8 +173,9 @@ const draw = () => {
     margin: 0 auto;
 
     .pineapple-canvas {
-        /* cursor 无法改变大小 */
-        /* cursor: url('@/assets/cur/Cross.cur'), auto;  */
+        // cursor 无法改变大小
+        // cursor: url(@/assets/cur/precision.cur), auto;
+        cursor: none;
         overflow: hidden;
         background: #fff;
     }
@@ -147,10 +184,13 @@ const draw = () => {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 50px;
+        width: 40px;
         transform: translate(-50%, -50%);
+        transform-origin: 0 0;
+        filter: drop-shadow(0 0 4px #000);
         pointer-events: none;
         user-select: none;
+        // transition: rotate 0.2s ease-in-out;
     }
 }
 
