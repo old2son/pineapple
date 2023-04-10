@@ -10,10 +10,11 @@ export const usePineappleStore = defineStore('pineappleCounter', () => {
 
     const pineappleArr: Ref<Pineapple[]> = ref([]);
 	const count = ref(0);
+	const destoryedCount = ref(0);
 	const rank = reactive([
         { name: 'CJY', score: count },
     ]);
-    const double = computed(() => count.value * 2);
+    const double = computed(() => destoryedCount.value * 2);
 	const increment = () => {
 		count.value++;
 	}
@@ -21,6 +22,7 @@ export const usePineappleStore = defineStore('pineappleCounter', () => {
 	return { 
         pineappleArr,
         count,
+        destoryedCount,
         rank,
         double, 
         increment 

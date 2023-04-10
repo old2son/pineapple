@@ -7,10 +7,10 @@ import trash from '@/components/Trash.vue';
 
 const pineappleStore = usePineappleStore();
 const { count, rank, double } = storeToRefs(pineappleStore);
-const $counter = ref();
+// const $counter = ref();
 const $rank = ref();
 
-  // 重置所有状态
+// 重置所有状态
 const reset = () => {
     pineappleStore.$reset();
 };
@@ -21,8 +21,8 @@ const reset = () => {
         <get-pineapple></get-pineapple>
 
         <div class="wrap-msg">
-            <div ref="$counter"><span style="font-size: 30px;">🍍</span>粉碎数:{{ count }}</div>
-            <div ref="$counter"><span style="font-size: 30px;">🍍</span>粉碎数x2:{{ double }}</div>
+            <div class="msg-count-crash"><span style="font-size: 30px;">🍍</span>碰撞数：{{ count }}</div>
+            <div class="msg-count-destroy"><span style="font-size: 30px;">🍍</span>破坏数 x2：{{ double }}</div>
             <!-- <a>记录</a> -->
             <a @click.stop="reset">重置</a>
             <ul ref="$rank">
@@ -31,7 +31,7 @@ const reset = () => {
                     <li>{{ item.name }}：{{ item.score }} <i @click.prevent="">X</i></li>
                 </template>
             </ul>
-            <trash :msg="'?'"></trash>
+            <trash :msg="'垃圾桶'"></trash>
         </div>
 
     </div>

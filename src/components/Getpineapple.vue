@@ -80,7 +80,8 @@ onMounted(() => {
 
 const pineappleClick = () => {
     pineappleStore.pineappleArr.push(new Pineapple(ctxPinieapple, $canvasPinieapple.value));
-    pineappleStore.increment();
+    // pineappleStore.increment();
+    pineappleStore.destoryedCount++;
     debounceSlice();
 
     // 一个以上无需重复 requestAnimationFrame
