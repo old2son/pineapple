@@ -162,6 +162,7 @@ export class Pineapple {
 
             if (isHit) {
                 console.log('🍍🍍🍍🍍🍍🍍！')
+                this.isBoom = true;
             }
         }
         
@@ -192,12 +193,13 @@ export class Pineapple {
 
             if (isHit) {
                 console.log('🍃🍃🍃🍃🍃🍃🍃！')
+                this.isBoom = true;
             }
         }
     }
 
     // 菠萝运动轨迹
-    pineappleUpdated(i: number | null = null, mouseX: number, mouseY: number): void {
+    pineappleUpdated(i: number | null = null, mouseX: number | null = null, mouseY: number | null = null): void {
         console.log(mouseX, mouseY);
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -208,33 +210,33 @@ export class Pineapple {
             this.index = i;
         }
 
-        // if (this.isBoom) {
-        //     this.boomUpdated();
-        //     return;
-        // }
+        if (this.isBoom) {
+            this.boomUpdated();
+            return;
+        }
 
-        // // 菠萝运动到底部时爆炸
-        // if (this.arrBody[0].ey > this.canvas.height) {
-        //     this.isBoom = true;
-        //     this.boomSound();
-        //     return;
-        // }
+        // 菠萝运动到底部时爆炸
+        if (this.arrBody[0].ey > this.canvas.height) {
+            this.isBoom = true;
+            this.boomSound();
+            return;
+        }
 
-        // this.pineappleRatio *= 0.99;    // 加速度
-        // this.pineappleRatio += this.commonSpeed;   // 重力
-        // const stepY = this.pineappleRatio;
+        this.pineappleRatio *= 0.99;    // 加速度
+        this.pineappleRatio += this.commonSpeed;   // 重力
+        const stepY = this.pineappleRatio;
 
-        // this.bodyStart.y += stepY;
-        // this.arrBody.map((item) => {
-        //     item.cy += stepY;
-        //     item.ey += stepY;
-        // });
+        this.bodyStart.y += stepY;
+        this.arrBody.map((item) => {
+            item.cy += stepY;
+            item.ey += stepY;
+        });
 
-        // this.leafStart.y += stepY;
-        // this.arrLeaf.map((item) => {
-        //     item.cy += stepY;
-        //     item.ey += stepY;
-        // });
+        this.leafStart.y += stepY;
+        this.arrLeaf.map((item) => {
+            item.cy += stepY;
+            item.ey += stepY;
+        });
     }
 
     // 初始化粒子坐标
