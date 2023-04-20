@@ -43,7 +43,7 @@ const debounce = (fn: Function, delay: number) => {
 };
 // 超过 5 秒后才清空数组
 const debounceSlice = debounce(() => {
-    pineappleStore.$patch({pineappleArr: []});
+    // pineappleStore.$patch({pineappleArr: []});
 }, 5000);
 
 const mouseMove = (e: MouseEvent) => {
@@ -51,19 +51,27 @@ const mouseMove = (e: MouseEvent) => {
     const { left, top } = $wrapPineapple.value.getBoundingClientRect();
     mouseStyle.x = clientX - left;
     mouseStyle.y = clientY - top;
+
+    // todo: isPointInPath 判断
+    // var a = ctxPinieapple.isPointInStroke(mouseStyle.x, mouseStyle.y);
+    // console.log(a)
+    for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
+        let current = pineappleStore.pineappleArr[i];
+        current.pineappleUpdated(i, mouseStyle.x, mouseStyle.y);
+    }
 };
 
 // 菠萝背景图
 const renderPiniaBg = () => {
-    const img = new Image();
-    img.src = imgPiniaBg;
-    img.onload = () => {
-        const pattern = ctxPinieapple.createPattern(img, 'repeat');
-        if (pattern !== null) {
-            ctxPinieapple.fillStyle = pattern;
-            ctxPinieapple.fillRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
-        }
-    };
+    // const img = new Image();
+    // img.src = imgPiniaBg;
+    // img.onload = () => {
+    //     const pattern = ctxPinieapple.createPattern(img, 'repeat');
+    //     if (pattern !== null) {
+    //         ctxPinieapple.fillStyle = pattern;
+    //         ctxPinieapple.fillRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
+    //     }
+    // };
 };
 
 onMounted(() => {
@@ -136,7 +144,7 @@ const draw = () => {
             @contextmenu.prevent
             @click="pineappleClick"
         ></canvas>
-        <img 
+        <!-- <img 
             class="pineapple-mouse"
             src="@/assets/images/pinia_sm.png" 
             alt="aim"
@@ -145,7 +153,7 @@ const draw = () => {
                 left:`${mouseStyle.x}px`,
                 rotate: `${mouseStyle.rotate}deg`,
             }"
-        >
+        > -->
     </div>
 
     <canvas 
@@ -176,7 +184,7 @@ const draw = () => {
     .pineapple-canvas {
         // cursor 无法改变大小
         // cursor: url(@/assets/cur/precision.cur), auto;
-        cursor: none;
+        // cursor: none;
         overflow: hidden;
         background: #fff;
     }

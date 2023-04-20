@@ -33,6 +33,8 @@ export class Pineapple {
     isRemove: boolean;
     index: number | null;
     itemSpeed: number;
+    mouseX: number | null;
+    mouseY: number | null;
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
@@ -48,26 +50,49 @@ export class Pineapple {
         this.isRemove = false;
         this.index = null;
         this.itemSpeed = randomFloatFromRange(1, 3);
+        this.mouseX = null;
+        this.mouseY = null;
 
         // 菠萝身坐标
-        this.bodyStart = { x: 140, y: -110 };
-        this.arrBody = [
-            { cx: 150, cy: -100, ex: 140, ey: -110 },
-            { cx: 115, cy: -150, ex: 120, ey: -180 },
-            { cx: 125, cy: -200, ex: 150, ey: -200 },
-            { cx: 160, cy: -200, ex: 165, ey: -195 },
-            { cx: 200, cy: -170, ex: 200, ey: -150 },
-            { cx: 205, cy: -125, ex: 180, ey: -110 },
-            { cx: 160, cy: -100, ex: 145, ey: -105 },
-        ];
+        // this.bodyStart = { x: 140, y: -110 };
+        // this.arrBody = [
+        //     { cx: 150, cy: -100, ex: 140, ey: -110 },
+        //     { cx: 115, cy: -150, ex: 120, ey: -180 },
+        //     { cx: 125, cy: -200, ex: 150, ey: -200 },
+        //     { cx: 160, cy: -200, ex: 165, ey: -195 },
+        //     { cx: 200, cy: -170, ex: 200, ey: -150 },
+        //     { cx: 205, cy: -125, ex: 180, ey: -110 },
+        //     { cx: 160, cy: -100, ex: 145, ey: -105 },
+        // ];
 
-        // 菠萝叶坐标
+        // // 菠萝叶坐标
+        // this.leafStart = { x: this.arrBody[1].ex, y: this.arrBody[1].ey };
+        // this.arrLeaf = [
+        //     { cx: 110, cy: -190, ex: 100, ey: -190 },
+        //     { cx: 110, cy: -200, ex: 130, ey: -195 },
+        //     { cx: 130, cy: -220, ex: 155, ey: -215 },
+        //     { cx: 145, cy: -210, ex: 145, ey: -200 },
+        // ];
+
+
+        // 测试用
+        this.ctx = ctx;
+        this.bodyStart = { x: 140, y: 190 };
+        this.arrBody = [
+            { cx: 150, cy: 200, ex: 140, ey: 190 },
+            { cx: 115, cy: 150, ex: 120, ey: 120 },
+            { cx: 125, cy: 100, ex: 150, ey: 100 },
+            { cx: 160, cy: 100, ex: 165, ey: 105 },
+            { cx: 200, cy: 130, ex: 200, ey: 150 },
+            { cx: 205, cy: 175, ex: 180, ey: 190 },
+            { cx: 160, cy: 200, ex: 145, ey: 195 },
+        ];
         this.leafStart = { x: this.arrBody[1].ex, y: this.arrBody[1].ey };
         this.arrLeaf = [
-            { cx: 110, cy: -190, ex: 100, ey: -190 },
-            { cx: 110, cy: -200, ex: 130, ey: -195 },
-            { cx: 130, cy: -220, ex: 155, ey: -215 },
-            { cx: 145, cy: -210, ex: 145, ey: -200 },
+            { cx: 110, cy: 110, ex: 100, ey: 110 },
+            { cx: 110, cy: 100, ex: 130, ey: 105 },
+            { cx: 130, cy: 80, ex: 155, ey: 85 },
+            { cx: 145, cy: 90, ex: 145, ey: 100 },
         ];
 
         // 粒子坐标
@@ -119,7 +144,6 @@ export class Pineapple {
         for (let i = 0; i < this.arrBody.length; i++) {
             this.ctx.quadraticCurveTo(this.arrBody[i].cx, this.arrBody[i].cy, this.arrBody[i].ex, this.arrBody[i].ey);
         }
-        this.ctx.closePath();
         this.ctx.lineWidth = 5;
         let bodyGradient = this.ctx.createLinearGradient(this.bodyStart.x, this.bodyStart.y, this.arrBody[1].ex, this.arrBody[1].ey);
         bodyGradient.addColorStop(0, '#ecb732');
@@ -129,6 +153,18 @@ export class Pineapple {
         this.ctx.strokeStyle = '#000';
         this.ctx.stroke();
         this.ctx.fill();
+        this.ctx.closePath();
+
+        if (this.mouseX !== null && this.mouseY !== null) {
+            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY);
+            // console.log('🍍！')
+            console.log(isHit)
+
+            if (isHit) {
+                console.log('🍍🍍🍍🍍🍍🍍！')
+            }
+        }
+        
     }
 
     // 生成菠萝叶
@@ -148,44 +184,57 @@ export class Pineapple {
         this.ctx.stroke();
         this.ctx.fill();
         this.ctx.closePath();
+
+        if (this.mouseX !== null && this.mouseY !== null) {
+            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY);
+            // console.log('🍃！')
+            console.log(isHit)
+
+            if (isHit) {
+                console.log('🍃🍃🍃🍃🍃🍃🍃！')
+            }
+        }
     }
 
     // 菠萝运动轨迹
-    pineappleUpdated(i: number | null = null): void {
+    pineappleUpdated(i: number | null = null, mouseX: number, mouseY: number): void {
+        console.log(mouseX, mouseY);
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        this.pineappleRender();
+        
         // 只有第一次进入时才会记录下标
         if (this.index === null && i !== null) {
             this.index = i;
         }
 
-        if (this.isBoom) {
-            this.boomUpdated();
-            return;
-        }
+        // if (this.isBoom) {
+        //     this.boomUpdated();
+        //     return;
+        // }
 
-        // 菠萝运动到底部时爆炸
-        if (this.arrBody[0].ey > this.canvas.height) {
-            this.isBoom = true;
-            this.boomSound();
-            return;
-        }
+        // // 菠萝运动到底部时爆炸
+        // if (this.arrBody[0].ey > this.canvas.height) {
+        //     this.isBoom = true;
+        //     this.boomSound();
+        //     return;
+        // }
 
-        this.pineappleRatio *= 0.99;    // 加速度
-        this.pineappleRatio += this.commonSpeed;   // 重力
-        const stepY = this.pineappleRatio;
+        // this.pineappleRatio *= 0.99;    // 加速度
+        // this.pineappleRatio += this.commonSpeed;   // 重力
+        // const stepY = this.pineappleRatio;
 
-        this.bodyStart.y += stepY;
-        this.arrBody.map((item) => {
-            item.cy += stepY;
-            item.ey += stepY;
-        });
+        // this.bodyStart.y += stepY;
+        // this.arrBody.map((item) => {
+        //     item.cy += stepY;
+        //     item.ey += stepY;
+        // });
 
-        this.leafStart.y += stepY;
-        this.arrLeaf.map((item) => {
-            item.cy += stepY;
-            item.ey += stepY;
-        });
-
-        this.pineappleRender();
+        // this.leafStart.y += stepY;
+        // this.arrLeaf.map((item) => {
+        //     item.cy += stepY;
+        //     item.ey += stepY;
+        // });
     }
 
     // 初始化粒子坐标
@@ -232,7 +281,7 @@ export class Pineapple {
             this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
             this.ctx.fillStyle = '#000';
             this.ctx.fill();
-            this.ctx.closePath();
+            // this.ctx.closePath();
         });
     }
 
