@@ -280,7 +280,7 @@ export class Pineapple {
             this.ctx.arc(current.x, current.y, current.r, 0, 360 * Math.PI / 180);
             this.ctx.fillStyle = '#000';
             this.ctx.fill();
-            // this.ctx.closePath();
+            this.ctx.closePath();
         });
     }
 
@@ -348,6 +348,7 @@ export class Pineapple {
         audio.play();
     }
 
+    // 接受鼠标位置判断 isPointInPath
     receviceMousePos(mouseX: number | null = null, mouseY: number | null = null): void {
         this.mouseX = mouseX;
         this.mouseY = mouseY;
