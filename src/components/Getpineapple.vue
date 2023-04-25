@@ -43,7 +43,7 @@ const debounce = (fn: Function, delay: number) => {
 };
 // 超过 5 秒后才清空数组
 const debounceSlice = debounce(() => {
-    // pineappleStore.$patch({pineappleArr: []});
+    pineappleStore.$patch({pineappleArr: []});
 }, 5000);
 
 const mouseMove = (e: MouseEvent) => {
@@ -52,26 +52,26 @@ const mouseMove = (e: MouseEvent) => {
     mouseStyle.x = clientX - left;
     mouseStyle.y = clientY - top;
 
-    // todo: isPointInPath 判断
-    // var a = ctxPinieapple.isPointInStroke(mouseStyle.x, mouseStyle.y);
-    // console.log(a)
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
         let current = pineappleStore.pineappleArr[i];
-        current.pineappleUpdated(i, mouseStyle.x, mouseStyle.y);
+        if (current.isBoom) {
+            continue;
+        }
+        current.receviceMousePos(mouseStyle.x, mouseStyle.y);
     }
 };
 
 // 菠萝背景图
 const renderPiniaBg = () => {
-    // const img = new Image();
-    // img.src = imgPiniaBg;
-    // img.onload = () => {
-    //     const pattern = ctxPinieapple.createPattern(img, 'repeat');
-    //     if (pattern !== null) {
-    //         ctxPinieapple.fillStyle = pattern;
-    //         ctxPinieapple.fillRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
-    //     }
-    // };
+    const img = new Image();
+    img.src = imgPiniaBg;
+    img.onload = () => {
+        const pattern = ctxPinieapple.createPattern(img, 'repeat');
+        if (pattern !== null) {
+            ctxPinieapple.fillStyle = pattern;
+            ctxPinieapple.fillRect(0, 0, $canvasPinieapple.value.width, $canvasPinieapple.value.height);
+        }
+    };
 };
 
 onMounted(() => {
@@ -86,7 +86,7 @@ onMounted(() => {
     });
 });
 
-const pineappleClick = () => {
+const startFn = () => {
     pineappleStore.pineappleArr.push(new Pineapple(ctxPinieapple, $canvasPinieapple.value));
     // pineappleStore.increment();
     pineappleStore.destoryedCount++;
@@ -97,6 +97,17 @@ const pineappleClick = () => {
         return;
     }
     step = requestAnimationFrame(draw);
+};
+
+const pineappleClick = () => {
+    // 每秒执行一次 starFn
+    if (pineappleStore.pineappleArr.length > 0) {
+        return;
+    }
+    startFn();
+    setInterval(() => {
+        startFn();
+    }, 200);
 }
 
 const draw = () => {
