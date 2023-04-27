@@ -159,10 +159,10 @@ export class Pineapple {
 
         // 击中🍍
         if (this.mouseX !== null && this.mouseY !== null) {
-            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY);
+            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY) || this.ctx.isPointInStroke(this.mouseX, this.mouseY);
 
             if (isHit) {
-                console.log('🍍🍍🍍🍍🍍🍍！')
+                console.log('🍍！')
                 this.isBoom = true;
             }
         }
@@ -188,10 +188,10 @@ export class Pineapple {
 
         // 击中🍃
         if (this.mouseX !== null && this.mouseY !== null) {
-            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY);
+            const isHit = this.ctx.isPointInPath(this.mouseX, this.mouseY) || this.ctx.isPointInStroke(this.mouseX, this.mouseY);
 
             if (isHit) {
-                console.log('🍃🍃🍃🍃🍃🍃🍃！')
+                console.log('🍃！')
                 this.isBoom = true;
             }
         }

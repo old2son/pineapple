@@ -9,16 +9,22 @@ const pineappleStore = usePineappleStore();
 const { count, rank, double } = storeToRefs(pineappleStore);
 // const $counter = ref();
 const $rank = ref();
+let counter = ref(0);
 
 // 重置所有状态
 const reset = () => {
     pineappleStore.$reset();
 };
+
+// 获取 getPineapple 传递的数据
+const getCount = (data: number) => {
+    counter.value = data;
+};
 </script>
 
 <template>
     <div class="container">
-        <get-pineapple></get-pineapple>
+        <get-pineapple @getCount="getCount"></get-pineapple>
 
         <div class="wrap-msg">
             <div class="msg-count-crash"><span style="font-size: 30px;">🍍</span>碰撞数：{{ count }}</div>
@@ -31,7 +37,8 @@ const reset = () => {
                     <li>{{ item.name }}：{{ item.score }} <i @click.prevent="">X</i></li>
                 </template>
             </ul>
-            <trash :msg="'垃圾桶'"></trash>
+            <div class="msg-countdown">倒计时：{{ counter }}</div>
+            <trash :msg="'我是垃圾桶'"></trash>
         </div>
 
     </div>

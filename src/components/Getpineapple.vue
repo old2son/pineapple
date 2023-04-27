@@ -29,9 +29,14 @@ const mouseStyle:{x: string | number, y: string | number, rotate: number, dirrec
 let ctxPinieapple: CanvasRenderingContext2D;
 let ctxBg: CanvasRenderingContext2D;
 let step: number;
+let gameTime = ref();
+const getCount = () => { // 传 home 秒数
+    return gameTime.value;
+};
+const emit = defineEmits([`${getCount}`]);
 
 const debounce = (fn: Function, delay: number) => {
-    let timer: number | null;
+    let timer: number | null; // NodeJS.Timer类型
     return function (this: any, ...args: any[]) {
         if (timer) {
             clearTimeout(timer);
@@ -88,7 +93,7 @@ onMounted(() => {
 
 const startFn = () => {
     pineappleStore.pineappleArr.push(new Pineapple(ctxPinieapple, $canvasPinieapple.value));
-    // pineappleStore.increment();
+    pineappleStore.increment();
     pineappleStore.destoryedCount++;
     debounceSlice();
 
@@ -104,10 +109,18 @@ const pineappleClick = () => {
     if (pineappleStore.pineappleArr.length > 0) {
         return;
     }
-    startFn();
-    setInterval(() => {
+
+    let seconds = 20;
+    // window.setInterval 解决 NodeJS.Timer 类型
+    let timeId = window.setInterval(() => {
         startFn();
-    }, 200);
+        seconds--;
+        emit('getCount', seconds);
+        if (seconds === 0) {
+            seconds = 20;
+            clearInterval(timeId);
+        }
+    }, 500);
 }
 
 const draw = () => {
@@ -155,6 +168,8 @@ const draw = () => {
             @contextmenu.prevent
             @click="pineappleClick"
         ></canvas>
+        
+        <!-- 🍍指针 -->
         <!-- <img 
             class="pineapple-mouse"
             src="@/assets/images/pinia_sm.png" 
