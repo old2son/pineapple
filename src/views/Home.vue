@@ -24,7 +24,11 @@ const getCount = (data: number) => {
 
 <template>
     <div class="container">
-        <get-pineapple @getCount="getCount"></get-pineapple>
+        <get-pineapple @getCount="getCount">
+            <template #cont>
+                <trash :msg="'🚮'"></trash>
+            </template>
+        </get-pineapple>
 
         <div class="wrap-msg">
             <div class="msg-count-crash"><span style="font-size: 30px;">🍍</span>碰撞数：{{ count }}</div>
@@ -38,7 +42,6 @@ const getCount = (data: number) => {
                 </template>
             </ul>
             <div class="msg-countdown">倒计时：{{ counter }}</div>
-            <trash :msg="'我是垃圾桶'"></trash>
         </div>
 
     </div>

@@ -20,11 +20,11 @@ const canvasBgStyle = reactive({
     width: window.innerWidth,
     height: window.innerHeight,
 });
-const mouseStyle:{x: string | number, y: string | number, rotate: number, dirrection: number  } = reactive({
+const mouseStyle:{x: string | number, y: string | number, rotate: number, direction: number  } = reactive({
     x: '50%',
     y: '50%',
     rotate: -35,
-    dirrection: 0,
+    direction: 0,
 });
 let ctxPinieapple: CanvasRenderingContext2D;
 let ctxBg: CanvasRenderingContext2D;
@@ -33,7 +33,7 @@ let gameTime = ref();
 const getCount = () => { // 传 home 秒数
     return gameTime.value;
 };
-const emit = defineEmits([`${getCount}`]);
+const emit = defineEmits(['getCount']);
 
 const debounce = (fn: Function, delay: number) => {
     let timer: number | null; // NodeJS.Timer类型
@@ -112,15 +112,21 @@ const pineappleClick = () => {
 
     let seconds = 20;
     // window.setInterval 解决 NodeJS.Timer 类型
-    let timeId = window.setInterval(() => {
-        startFn();
+    let timeId1 = window.setInterval(() => {
         seconds--;
         emit('getCount', seconds);
         if (seconds === 0) {
             seconds = 20;
-            clearInterval(timeId);
+            clearInterval(timeId1);
+            clearInterval(timeId2);
         }
-    }, 500);
+    }, 1000);
+
+    let timeId2 = window.setInterval(() => {
+        startFn();
+    }, 300);
+
+    startFn();
 }
 
 const draw = () => {
@@ -138,14 +144,14 @@ const draw = () => {
         current.pineappleUpdated(i);
     }
 
-    if (mouseStyle.dirrection) {
+    if (mouseStyle.direction) {
         mouseStyle.rotate -= 1;
     }
     else {
         mouseStyle.rotate > 360 && (mouseStyle.rotate = 0);
         mouseStyle.rotate += 1;
     }
-    
+
     requestAnimationFrame(draw);
 };
 </script>
@@ -180,6 +186,8 @@ const draw = () => {
                 rotate: `${mouseStyle.rotate}deg`,
             }"
         > -->
+        
+        <slot name="cont"></slot>
     </div>
 
     <canvas 
