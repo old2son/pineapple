@@ -10,9 +10,11 @@ const { count, rank, double } = storeToRefs(pineappleStore);
 // const $counter = ref();
 const $rank = ref();
 let counter = ref(0);
+let isReset = ref(false);
 
 // 重置所有状态
 const reset = () => {
+    isReset.value = true;
     pineappleStore.$reset();
 };
 
@@ -20,13 +22,27 @@ const reset = () => {
 const getCount = (data: number) => {
     counter.value = data;
 };
+const getIsReset = (data: boolean) => {
+    isReset.value = !data;
+};
+const getMousePosition = (data: {x: string | number, y: string | number}) => {
+    console.log(data);
+};
 </script>
 
 <template>
     <div class="container">
-        <get-pineapple @getCount="getCount">
+        <get-pineapple 
+            @getCount="getCount" 
+            @getIsReset="getIsReset"
+            @getMousePosition="getMousePosition"
+            :isReset=isReset
+        >
             <template #cont>
-                <trash :msg="'🚮'"></trash>
+                <trash 
+                    :msg="'🚮'"
+                    
+                ></trash>
             </template>
         </get-pineapple>
 

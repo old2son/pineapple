@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, toRefs, watch } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { Pineapple } from './scripts/Pineapple';
 import { Canvasbg } from './scripts/CanvasBg';
 import imgPiniaBg from '@/assets/images/pinia_sm_bg.png';
 import imgBg from '@/assets/images/pinia.jpeg';
+
+const props = withDefaults(defineProps<{ isReset: boolean }>(), {
+	isReset: false,
+});
+const { isReset } = toRefs(props);
+const timeObj = reactive({
+    seconds: 20,
+    timeId1: null as number | null,
+    timeId2: null as number | null
+});
 
 const pineappleStore = usePineappleStore();
 const $wrapPineapple = ref();
@@ -29,12 +39,8 @@ const mouseStyle:{x: string | number, y: string | number, rotate: number, direct
 let ctxPinieapple: CanvasRenderingContext2D;
 let ctxBg: CanvasRenderingContext2D;
 let step: number;
-let gameTime = ref();
-const getCount = () => { // 传 home 秒数
-    return gameTime.value;
-};
-const emit = defineEmits(['getCount']);
 
+const emit = defineEmits(['getCount', 'getIsReset', 'getMousePosition']);
 const debounce = (fn: Function, delay: number) => {
     let timer: number | null; // NodeJS.Timer类型
     return function (this: any, ...args: any[]) {
@@ -56,6 +62,8 @@ const mouseMove = (e: MouseEvent) => {
     const { left, top } = $wrapPineapple.value.getBoundingClientRect();
     mouseStyle.x = clientX - left;
     mouseStyle.y = clientY - top;
+    
+    emit('getMousePosition', {x: mouseStyle.x, y: mouseStyle.y});
 
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
         let current = pineappleStore.pineappleArr[i];
@@ -109,20 +117,19 @@ const pineappleClick = () => {
     if (pineappleStore.pineappleArr.length > 0) {
         return;
     }
-
-    let seconds = 20;
+    
     // window.setInterval 解决 NodeJS.Timer 类型
-    let timeId1 = window.setInterval(() => {
-        seconds--;
-        emit('getCount', seconds);
-        if (seconds === 0) {
-            seconds = 20;
-            clearInterval(timeId1);
-            clearInterval(timeId2);
+    timeObj.timeId1 = window.setInterval(() => {
+        timeObj.seconds--;
+        emit('getCount', timeObj.seconds);
+        if (timeObj.seconds === 0 || isReset.value) {
+            timeObj.seconds = 20;
+            timeObj.timeId1 && clearInterval(timeObj.timeId1);
+            timeObj.timeId2 && clearInterval(timeObj.timeId2);
         }
     }, 1000);
 
-    let timeId2 = window.setInterval(() => {
+    timeObj.timeId2 = window.setInterval(() => {
         startFn();
     }, 300);
 
@@ -154,6 +161,15 @@ const draw = () => {
 
     requestAnimationFrame(draw);
 };
+
+watch (isReset, (nv, ov) => {
+    if (nv) {
+        timeObj.seconds = 20;
+        timeObj.timeId1 && clearInterval(timeObj.timeId1);
+        timeObj.timeId2 && clearInterval(timeObj.timeId2);
+        emit('getIsReset', true);
+    }
+});
 </script>
 
 <template>
