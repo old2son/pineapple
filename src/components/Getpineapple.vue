@@ -40,7 +40,7 @@ let ctxPinieapple: CanvasRenderingContext2D;
 let ctxBg: CanvasRenderingContext2D;
 let step: number;
 
-const emit = defineEmits(['getCount', 'getIsReset', 'getMousePosition']);
+const emit = defineEmits(['getCount', 'getIsReset', 'getMousePosition', 'getMaxWidth']);
 const debounce = (fn: Function, delay: number) => {
     let timer: number | null; // NodeJS.Timer类型
     return function (this: any, ...args: any[]) {
@@ -96,6 +96,7 @@ onMounted(() => {
     nextTick(() => {
         renderPiniaBg();
         new Canvasbg(ctxBg, $canvasBg.value, {imgBg});
+        emit('getMaxWidth', canvasPineappleStyle.width);
     });
 });
 
