@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 // defineProps<{ msg: string }>();
 const props = withDefaults(defineProps<{
@@ -14,21 +14,14 @@ const props = withDefaults(defineProps<{
 	mousePosition: () => ({ // 默认值
 		x: 0,
 		maxWidth: 0,
-	}),
-	
+	})
 });
 
-// const $dl = ref();
-
-// const limitPos = computed(() => {
-// 	const { x } = props.mousePosition;
-// 	const { width } = $dl.value.getBoundingClientRect();
-// 	const limitX = window.innerWidth - width;
-// 	return x > limitX ? limitX : x;
-// });
-// const mouseMove = () => {
-//     console.log(limitPos)
-// };
+const $dl = ref();
+const emit = defineEmits(['getTrashStyle']);
+onMounted(() => {
+	emit('getTrashStyle', $dl.value.getBoundingClientRect());
+});
 
 </script>
 
@@ -38,12 +31,9 @@ const props = withDefaults(defineProps<{
 		:style="{
 			left: `${props.mousePosition.x}px`,
 		}"
-
-		@mousemove="mouseMove"
 	>
 		<dt><img src="@/assets/images/garbage.png" :alt="msg"></dt>
-		<!-- <dd>{{ msg }}</dd> -->
-		<dd>{{ props.mousePosition.x }}</dd>
+		<dd>{{ msg }}</dd>
 	</dl>
 </template>
 

@@ -77,7 +77,7 @@ export class Pineapple {
         ];
 
 
-        // 测试用
+        // 测试用坐标
         // this.ctx = ctx;
         // this.bodyStart = { x: 140, y: 190 };
         // this.arrBody = [
@@ -164,6 +164,7 @@ export class Pineapple {
             if (isHit) {
                 console.log('🍍！')
                 this.isBoom = true;
+                pineappleStore.double();
             }
         }
     }
@@ -193,6 +194,7 @@ export class Pineapple {
             if (isHit) {
                 console.log('🍃！')
                 this.isBoom = true;
+                pineappleStore.double();
             }
         }
     }
@@ -201,7 +203,7 @@ export class Pineapple {
     pineappleUpdated(i: number | null = null): void {
         this.pineappleRender();
         
-        // 只有第一次进入时才会记录下标
+        // 记录下标
         if (this.index === null && i !== null) {
             this.index = i;
         }
@@ -216,6 +218,7 @@ export class Pineapple {
         if (this.arrBody[0].ey > this.canvas.height) {
             this.isBoom = true;
             this.boomSound();
+            pineappleStore.increment();
             return;
         }
 

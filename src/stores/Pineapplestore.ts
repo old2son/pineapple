@@ -8,16 +8,24 @@ export const usePineappleStore = defineStore('pineappleCounter', () => {
     // computed() 就是 getters
     // function() 就是 actions
 
+    
     const pineappleArr: Ref<Pineapple[]> = ref([]);
 	const count = ref(0);
 	const destoryedCount = ref(0);
 	const rank = reactive([
-        { name: 'CJY', score: count },
+        { 
+            name: 'default player', 
+            score: 1 
+        },
     ]);
-    const double = computed(() => destoryedCount.value * 2);
+    // const double = computed(() => destoryedCount.value * 2);
 	const increment = () => {
 		count.value++;
 	}
+
+    const double = () => {
+        destoryedCount.value += 2;
+    };
 
 	return { 
         pineappleArr,

@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick, computed, toRefs, watch } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, toRefs, watch, watchEffect } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { Pineapple } from './scripts/Pineapple';
 import { Canvasbg } from './scripts/CanvasBg';
 import imgPiniaBg from '@/assets/images/pinia_sm_bg.png';
 import imgBg from '@/assets/images/pinia.jpeg';
 
-const props = withDefaults(defineProps<{ isReset: boolean }>(), {
+const props = withDefaults(defineProps<{ 
+    isReset: boolean, 
+    trashStyle: { [key: string]: any }
+}>(), {
 	isReset: false,
+    trashStyle: () => ({})
 });
-const { isReset } = toRefs(props);
+const { isReset, trashStyle } = toRefs(props);
 const timeObj = reactive({
     seconds: 20,
     timeId1: null as number | null,
@@ -59,10 +63,17 @@ const debounceSlice = debounce(() => {
 
 const mouseMove = (e: MouseEvent) => {
     const { clientX, clientY } = e;
-    const { left, top } = $wrapPineapple.value.getBoundingClientRect();
+    const { left, top, width, height } = $wrapPineapple.value.getBoundingClientRect();
     mouseStyle.x = clientX - left;
-    mouseStyle.y = clientY - top;
-    
+    // mouseStyle.y = clientY - top;
+
+    if (mouseStyle.x > width) {
+        mouseStyle.x = width;
+    }
+    else if (mouseStyle.x < 0) {
+        mouseStyle.x = 0;
+    }
+
     emit('getMousePosition', {x: mouseStyle.x, y: mouseStyle.y});
 
     for (let i = 0; i < pineappleStore.pineappleArr.length; i++) {
@@ -70,7 +81,7 @@ const mouseMove = (e: MouseEvent) => {
         if (current.isBoom) {
             continue;
         }
-        current.receviceMousePos(mouseStyle.x, mouseStyle.y);
+        current.receviceMousePos(mouseStyle.x as number, mouseStyle.y as number);
     }
 };
 
@@ -92,18 +103,17 @@ onMounted(() => {
     ctxBg = $canvasBg.value.getContext('2d');
     canvasPineappleStyle.width = $wrapPineapple.value.offsetWidth;
     canvasPineappleStyle.height = $wrapPineapple.value.offsetHeight;
-    
+
     nextTick(() => {
         renderPiniaBg();
         new Canvasbg(ctxBg, $canvasBg.value, {imgBg});
         emit('getMaxWidth', canvasPineappleStyle.width);
+        mouseStyle.y = canvasPineappleStyle.height - trashStyle.value.height + 20;
     });
 });
 
 const startFn = () => {
     pineappleStore.pineappleArr.push(new Pineapple(ctxPinieapple, $canvasPinieapple.value));
-    pineappleStore.increment();
-    pineappleStore.destoryedCount++;
     debounceSlice();
 
     // 一个以上无需重复 requestAnimationFrame
@@ -199,7 +209,7 @@ watch (isReset, (nv, ov) => {
             alt="aim"
             :style="{
                 top: `${mouseStyle.y}px`,
-                left:`${mouseStyle.x}px`,
+                left: `${mouseStyle.x}px`,
                 rotate: `${mouseStyle.rotate}deg`,
             }"
         > -->
