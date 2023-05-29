@@ -26,12 +26,25 @@ export const usePineappleStore = defineStore('pineappleCounter', () => {
         destoryedCount.value += 2;
     };
 
+    // 重置所有状态
+    const $reset = () => {
+        count.value = 0;
+        destoryedCount.value = 0;
+        pineappleArr.value.splice(0, pineappleArr.value.length);
+        rank.splice(0, rank.length);
+        rank.push({ 
+            name: 'default player', 
+            score: 1 
+        });
+    }
+
 	return { 
         pineappleArr,
         count,
         destoryedCount,
         rank,
         double, 
-        increment 
+        increment,
+        $reset
     };
 });

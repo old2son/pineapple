@@ -1,3 +1,6 @@
-# 🍍 click
+# pinia demo 
 
-😡 i hate 🍍!
+![6](./src/assets/demo.webp)
+
+
+

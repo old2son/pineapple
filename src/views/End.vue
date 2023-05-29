@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick, inject } from 'vue';
+import { ref, inject, computed } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { storeToRefs } from 'pinia';
 const pineappleStore = usePineappleStore();
@@ -12,9 +12,13 @@ let isShow = ref(false);
 
 // 重置所有状态
 const reset = () => {
-    pineappleStore.$reset();
-	// updateReset && updateReset(true);
+	pineappleStore.$reset();
+	updateReset && updateReset(true);
 };
+
+const rankArr = computed(() => {
+	return pineappleStore.rank;
+});
 
 const delRankItem = (index: number) => {
 	rank.value.splice(index, 1);
@@ -29,14 +33,14 @@ const delRankItem = (index: number) => {
 	>
 		🎏🎏🎏🎏🎏
 		<ul ref="$rank">
-			<template v-for="(item, index) in rank" :key="index">
+			<template v-for="(item, index) in rankArr" :key="index">
 				<li :title="`${item.score.toString()} point`">
 					<b>{{ item.name }}：{{ item.score }} point</b> 
 					<i @click.prevent="delRankItem(index)">X</i>
 				</li>
 			</template>
 		</ul>
-		<a class="btn-reset" @click.stop="reset">重置</a>
+		<a class="btn-reset" @click="reset">重置</a>
 	</div>
 </template>
 
