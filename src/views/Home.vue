@@ -1,22 +1,30 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, provide } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { storeToRefs } from 'pinia';
 import getPineapple from '@/components/Getpineapple.vue';
 import trash from '@/components/Trash.vue';
+import end from '@/views/End.vue';
 
 const pineappleStore = usePineappleStore();
 const { count, rank, destoryedCount } = storeToRefs(pineappleStore);
-// const $counter = ref();
-const $rank = ref();
 const user = reactive({
-    name: 'Player'
+    name: 'Player',
+    flag: false,
 });
 const trashStyle = reactive({
     value: {}
 });
 let counter = ref(0);
+
+// home 组件管理全局 reset 状态
 let isReset = ref(false);
+const updateProvideReset = (flag: boolean) => {
+    isReset.value = flag;
+};
+
+provide('reset', isReset);
+provide('updateReset', updateProvideReset);
 
 const mousePosition = reactive({
     x: 0,
@@ -24,19 +32,13 @@ const mousePosition = reactive({
     maxWidth: 0,
 });
 
-
-// 重置所有状态
-const reset = () => {
-    isReset.value = true;
-    pineappleStore.$reset();
-};
+const isDbclick = computed(() => {
+    return user.flag;
+});
 
 // 获取 getPineapple 传递的数据
 const getCount = (data: number) => {
     counter.value = data;
-};
-const getIsReset = (data: boolean) => {
-    isReset.value = !data;
 };
 const getMousePosition = (data: {x: number, y: number}) => {
     mousePosition.x = data.x;
@@ -48,21 +50,26 @@ const getMaxWidth = (data: number) => {
 const getTrashStyle = (data: Element) => {
     trashStyle.value = data;
 };
+
+const insertRank = () => {
+    rank.value.push({
+        name: user.name,
+        score: count.value,
+    });
+};
 </script>
 
 <template>
     <div class="container">
         <get-pineapple 
             @getCount="getCount" 
-            @getIsReset="getIsReset"
             @getMousePosition="getMousePosition"
             @getMaxWidth="getMaxWidth"
-            :isReset=isReset
             :trashStyle=trashStyle.value
         >   
             <template #cont>
                 <trash 
-                    :msg="'🚮'"
+                    :msg="'·_·'"
                     :mousePosition="mousePosition"
                     @getTrashStyle="getTrashStyle"
                 ></trash>
@@ -70,20 +77,15 @@ const getTrashStyle = (data: Element) => {
         </get-pineapple>
 
         <div class="wrap-msg">
-            <div class="msg-count-crash"><span style="font-size: 30px;">🍍</span>碰撞数：{{ count }}</div>
-            <div class="msg-count-destroy"><span style="font-size: 30px;">🍍</span>破坏数 x2：{{ destoryedCount }}</div>
-            <!-- <a>记录</a> -->
-            <input type="text" v-model="user.name">
-            <p>{{user.name}}</p>
-            <div class="rank-wrap">
-                排行榜:
-                <ul ref="$rank">
-                    <template v-for="(item, index) in rank" :key="index">
-                        <li>{{ item.name }}：{{ item.score }} <i @click.prevent="">X</i></li>
-                    </template>
-                </ul>
-                <a @click.stop="reset">重置</a>
-            </div>
+            <div class="msg-count-crash">😒：{{ count }}</div>
+            <div class="msg-count-destroy">🚮(x2)：{{ destoryedCount }}</div>
+            <dl>
+                <dt v-show="isDbclick"><input @keydown.enter="user.flag = false" type="text" v-model="user.name"></dt>
+                <dd><b @dblclick="user.flag = true">{{ user.name }}</b></dd>
+                <dd><a class="btn-insert" @click="insertRank">记录</a></dd>
+            </dl>
+            
+            <end></end>
             <div class="msg-countdown">倒计时：{{ counter }}</div>
         </div>
 
@@ -103,6 +105,22 @@ const getTrashStyle = (data: Element) => {
     .wrap-msg {
         width: 100%;
         text-align: center;
+
+        b {
+            display: inline-block;
+            margin: 8px auto;
+            color: chartreuse;
+            font-weight: normal;
+        }
+
+        .btn-insert {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 8px auto;
+            border-radius: 3px;
+            color: #fff;
+            background-color: darkslategray;
+        }
     }
 }
 </style>

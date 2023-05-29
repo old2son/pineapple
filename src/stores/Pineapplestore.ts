@@ -7,7 +7,6 @@ export const usePineappleStore = defineStore('pineappleCounter', () => {
     // ref() 就是 state 属性
     // computed() 就是 getters
     // function() 就是 actions
-
     
     const pineappleArr: Ref<Pineapple[]> = ref([]);
 	const count = ref(0);

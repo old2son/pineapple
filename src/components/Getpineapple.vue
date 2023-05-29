@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick, computed, toRefs, watch, watchEffect } from 'vue';
+import { ref, Ref, reactive, onMounted, nextTick, computed, toRefs, watch, watchEffect, inject } from 'vue';
 import { usePineappleStore } from '@/stores/Pineapplestore';
 import { Pineapple } from './scripts/Pineapple';
 import { Canvasbg } from './scripts/CanvasBg';
 import imgPiniaBg from '@/assets/images/pinia_sm_bg.png';
 import imgBg from '@/assets/images/pinia.jpeg';
 
+const reset = inject<Ref<boolean>>('reset');
+const updateReset = inject<Function>('updateReset');
+const isReset = computed(() => {
+    return reset?.value;
+});
 const props = withDefaults(defineProps<{ 
-    isReset: boolean, 
     trashStyle: { [key: string]: any }
 }>(), {
-	isReset: false,
     trashStyle: () => ({})
 });
-const { isReset, trashStyle } = toRefs(props);
+const { trashStyle } = toRefs(props);
 const timeObj = reactive({
     seconds: 20,
     timeId1: null as number | null,
@@ -44,7 +47,7 @@ let ctxPinieapple: CanvasRenderingContext2D;
 let ctxBg: CanvasRenderingContext2D;
 let step: number;
 
-const emit = defineEmits(['getCount', 'getIsReset', 'getMousePosition', 'getMaxWidth']);
+const emit = defineEmits(['getCount', 'getMousePosition', 'getMaxWidth']);
 const debounce = (fn: Function, delay: number) => {
     let timer: number | null; // NodeJS.Timer类型
     return function (this: any, ...args: any[]) {
@@ -137,6 +140,7 @@ const pineappleClick = () => {
             timeObj.seconds = 20;
             timeObj.timeId1 && clearInterval(timeObj.timeId1);
             timeObj.timeId2 && clearInterval(timeObj.timeId2);
+	        updateReset && updateReset(false);
         }
     }, 1000);
 
@@ -178,7 +182,7 @@ watch (isReset, (nv, ov) => {
         timeObj.seconds = 20;
         timeObj.timeId1 && clearInterval(timeObj.timeId1);
         timeObj.timeId2 && clearInterval(timeObj.timeId2);
-        emit('getIsReset', true);
+        updateReset && updateReset(false);
     }
 });
 </script>
@@ -188,6 +192,7 @@ watch (isReset, (nv, ov) => {
         class="wrap-pineapple"
         ref="$wrapPineapple"
         @mousemove="mouseMove"
+        @click="pineappleClick"
     >
         <canvas 
             class="pineapple-canvas"
@@ -199,7 +204,6 @@ watch (isReset, (nv, ov) => {
                 borderRadius: canvasPineappleStyle.borderRadius,
             }"
             @contextmenu.prevent
-            @click="pineappleClick"
         ></canvas>
         
         <!-- 🍍指针 -->
