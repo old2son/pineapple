@@ -140,7 +140,7 @@ const pineappleClick = () => {
             timeObj.seconds = 20;
             timeObj.timeId1 && clearInterval(timeObj.timeId1);
             timeObj.timeId2 && clearInterval(timeObj.timeId2);
-	        updateReset && updateReset(false);
+	    updateReset && updateReset(false);
         }
     }, 1000);
 
