@@ -1,6 +1,6 @@
 # pinia demo 
 
-![6](./src/assets/demo.webp)
+![demoImg](./src/assets/demo.webp)
 
 
 
