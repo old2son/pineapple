@@ -1,5 +1,5 @@
 import { usePineappleStore } from '@/stores/Pineapplestore';
-import { randomIntFromRange, randomFloatFromRange } from '@/untils/randomRange';
+import { randomIntFromRange, randomFloatFromRange } from '@/utils/randomRange';
 import sound from '@/assets/sounds/splatter.mp3';
 
 const pineappleStore = usePineappleStore();

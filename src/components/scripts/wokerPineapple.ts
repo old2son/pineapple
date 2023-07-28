@@ -1,4 +1,4 @@
-import { randomIntFromRange, randomFloatFromRange } from '@/untils/randomRange';
+import { randomIntFromRange, randomFloatFromRange } from '@/utils/randomRange';
 
 export default onmessage = (e) => {
 	const { body, leaf, bodyStart, leafStart, canvasWidth, type } = JSON.parse(e.data);
